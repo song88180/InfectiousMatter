@@ -13,6 +13,7 @@
     "dat.gui": "^0.7.7",
     "fastpriorityqueue": "^0.6.3",
     "jstat": "^1.9.2",
+    "lodash.debounce": "^4.0.8",
     "matter-collision-events": "^0.1.7",
     "matter-js": "^0.14.2",
     "matter-wrap": "^0.2.0",
