@@ -1,4 +1,4 @@
-Matter = require('matter-js');
+var Matter = require('matter-js');
 require('matter-wrap');
 var { MatterCollisionEvents } = require('matter-collision-events');
 Matter.use('matter-wrap', MatterCollisionEvents);
@@ -52,10 +52,10 @@ var Engine = Matter.Engine,
     Render = Matter.Render,
     World = Matter.World,
     Body = Matter.Body,
-    Bodies = Matter.Bodies;
-    Bounds = Matter.Bounds;
-    Mouse = Matter.Mouse;
-    MouseConstraint = Matter.MouseConstraint;
+    Bodies = Matter.Bodies,
+    Bounds = Matter.Bounds,
+    Mouse = Matter.Mouse,
+    MouseConstraint = Matter.MouseConstraint,
     Events = Matter.Events;
 
 

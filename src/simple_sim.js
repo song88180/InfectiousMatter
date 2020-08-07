@@ -1,15 +1,14 @@
 var UIkit = require('uikit');
-
-
+var Matter = require('matter-js');
+var Plotly = require('plotly.js');
+var Viva = require('vivagraphjs');
+const dat = require('dat.gui');
+var { InfectiousMatter, AgentStates, ContactGraph } = require('./lib/simulation.js');
+var ReactDOM = require('react-dom');
+var React = require('react');
+import MatterDiv from './MatterDiv';
 
 window.onload = function() {
-    var Matter = require('matter-js');
-    var Plotly = require('plotly.js');
-    var Viva = require('vivagraphjs');
-
-    const dat = require('dat.gui');
-    var { InfectiousMatter, AgentStates, ContactGraph } = require('./lib/simulation.js');
-
     InfectiousMatter.prototype.migrate_event = function() {
         return () => {
             for (let i=0; i < world_params.num_visitors; i++) {
@@ -47,7 +46,9 @@ window.onload = function() {
             }
         };
     };
-
+    
+    let residences = [];
+    
     let world_params = {
         num_residences: 1,
         residence_options: [],
@@ -116,7 +117,30 @@ window.onload = function() {
 
 
 
-    let InfectiousMatterSim = new InfectiousMatter('matterDiv', false, simulation_params, infection_params, default_simulation_colors);
+    let InfectiousMatterSim = new InfectiousMatter('matterDiv', false, simulation_params, infection_params, default_simulation_colors);;
+
+
+
+    //const matterDiv = () => (
+    //  <div>
+    //    < />
+    //  </div>
+    //);
+
+    ReactDOM.render(
+      <MatterDiv
+        elementID = "canvas"
+      />,
+      document.getElementById('test')
+    );
+
+
+
+
+
+
+
+
 
     let viva_layout = Viva.Graph.Layout.forceDirected(ContactGraph, {
         springLength : 15,
@@ -140,7 +164,7 @@ window.onload = function() {
     }
 
     var setup_world = function(res_size, res_pad) {
-        residences = []
+        residences = [];
         let margin = res_pad || world_params.residence_padding || 20;
         let residence_size = res_size || world_params.residence_size || 140;
 
@@ -367,14 +391,12 @@ window.onload = function() {
         document.getElementById('graphDiv').style.visibility = "hidden";
         document.getElementById('plotDiv').style.visibility = "visible";
 
-
         clear_simulation();
         world_params.pop_size = 100; 
         world_params.num_residences = 4;
         world_params.residence_size = 120;
         world_params.num_to_infect = 2;
         world_params.num_visitors = 5;
-
         reset_population();
         InfectiousMatterSim.infection_params.per_contact_infection = 1.0;
         
@@ -453,6 +475,44 @@ window.onload = function() {
                 }, [0, 1, 2, 3]);
             }, 1000);
         }
+
+        
+    UIkit.util.on("#page8", 'inview', function(e) {
+        document.getElementById('graphDiv').style.visibility = "hidden";
+        document.getElementById('plotDiv').style.visibility = "hidden";
+
+        clear_simulation();
+        world_params.pop_size = 100; 
+        world_params.num_residences = 1;
+        world_params.residence_size = 300 - world_params.residence_padding*2;
+        world_params.num_to_infect = 5;
+        world_params.num_visitors = 0;
+
+        reset_population();
+        InfectiousMatterSim.infection_params.per_contact_infection = 1.0;
+
+
+        document.getElementById('plotDiv').style.visibility = "hidden";
+        Plotly.newPlot('plotDiv', get_fresh_traces(), infection_layout, {responsive:true});
+        plotly_interval = setInterval(function() {
+            Plotly.extendTraces('plotDiv', {
+                x: [
+                    [InfectiousMatterSim.cur_sim_time/simulation_params.sim_time_per_day],
+                    [InfectiousMatterSim.cur_sim_time/simulation_params.sim_time_per_day],
+                    [InfectiousMatterSim.cur_sim_time/simulation_params.sim_time_per_day], 
+                    [InfectiousMatterSim.cur_sim_time/simulation_params.sim_time_per_day]
+                    ],
+                y: [
+                    [InfectiousMatterSim.state_counts[AgentStates.EXPOSED]],
+                    [InfectiousMatterSim.state_counts[AgentStates.S_INFECTED] + InfectiousMatterSim.state_counts[AgentStates.A_INFECTED]],
+                    [InfectiousMatterSim.state_counts[AgentStates.RECOVERED]],
+                    [InfectiousMatterSim.state_counts[AgentStates.SUSCEPTIBLE]]
+                    ]
+            }, [0, 1, 2, 3]);
+        }, 1000)
+
+        boundry_check = true;
+    });
 
 
         if (boundry_check) setup_rural_sim(world_params.num_visitors);
