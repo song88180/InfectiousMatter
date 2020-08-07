@@ -121,16 +121,8 @@ window.onload = function() {
 
 
 
-    //const matterDiv = () => (
-    //  <div>
-    //    < />
-    //  </div>
-    //);
-
     ReactDOM.render(
-      <MatterDiv
-        elementID = "canvas"
-      />,
+      <MatterDiv />,
       document.getElementById('test')
     );
 
@@ -324,7 +316,7 @@ window.onload = function() {
     UIkit.util.on("#page2", 'inview', function(e) {
         document.getElementById('graphDiv').style.visibility = "hidden";
         document.getElementById('plotDiv').style.visibility = "hidden";
-
+        
         clear_simulation();
         world_params.pop_size = 11 
         world_params.num_residences = 1;

@@ -1,50 +1,42 @@
 const ReactDOM = require("react-dom");
 import React, { useState, useRef, useEffect } from 'react';
 const Matter = require("matter-js");
+import debounce from 'lodash.debounce';
+/**
+ * useScroll React custom hook
+ * Usage:
+ *    const { scrollX, scrollY, scrollDirection } = useScroll();
+ */
 
-function MatterDiv({elementID}){
+const MatterDiv = () => {
 
-  const targetElement = useRef(null);
+  // Set a single object `{ x: ..., y: ..., direction: ... }` once on init
+  const [scroll, setScroll] = useState({
+    y: document.body.getBoundingClientRect().top,
+    direction: ''
+  })
 
-  useEffect(()=>{
-    var Engine = Matter.Engine,
-      Render = Matter.Render,
-      World = Matter.World,
-      Bodies = Matter.Bodies,
-      Mouse = Matter.Mouse,
-      MouseConstraint = Matter.MouseConstraint;
-    
-    var engine = Engine.create();
-    
-    var render = Render.create({
-      engine: engine,
-      element: targetElement.current,
-      options: {
-        width: 600,
-        height: 600,
-        wireframes: false
-      }
-    });
+  const listener = e => {
+    // `prev` provides us the previous state: https://reactjs.org/docs/hooks-reference.html#functional-updates
+    setScroll(prev => ({
+      y: -document.body.getBoundingClientRect().top,
+      // Here we’re comparing the previous state to the current state to get the scroll direction
+      direction: prev.y > -document.body.getBoundingClientRect().top ? 'up' : 'down'
+    }))
+  }
 
-    var ballA = Bodies.circle(210, 100, 30, { restitution: 0.5 });
-    var ballB = Bodies.circle(110, 50, 30, { restitution: 0.5 });
+  const debounceWrapper = debounce(listener, 10); // Delay listener function for 10 ms
 
-    World.add(engine.world, [
-      // walls
-      Bodies.rectangle(200, 0, 600, 50, { isStatic: true }),
-      Bodies.rectangle(200, 600, 600, 50, { isStatic: true }),
-      Bodies.rectangle(260, 300, 50, 600, { isStatic: true }),
-      Bodies.rectangle(0, 300, 50, 600, { isStatic: true })
-    ]);
-
-    World.add(engine.world, [ballA, ballB]);
-
-    Engine.run(engine);
-
-    Render.run(render);
+  useEffect(() => {
+    window.addEventListener('scroll', debounceWrapper)
+    // cleanup function occurs on unmount
+    return () => window.removeEventListener('scroll', debounceWrapper)
+  // Run `useEffect` only once on mount, so add `, []` after the closing curly brace }
   }, []);
-  
-  return (<div ref={targetElement} />);
+
+  return(
+    <p>{scroll.y},{scroll.direction}</p>
+  );
 }
 
 export default MatterDiv;
